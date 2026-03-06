@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BEKYA · circular recycling</title>
+  <style>
+    /* ---------- RESET & GLOBAL ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background-color: #ffffff;
+      color: #0f3d2e;               /* dark comfortable green */
+      line-height: 1.5;
+    }
+
+    /* ---------- FIXED HEADER (white + green, subtle shadow) ---------- */
+    .header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #ffffff;
+      box-shadow: 0 4px 12px rgba(15, 61, 46, 0.08);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 1.8rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: #0f3d2e;
+    }
+
+    .nav-buttons {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .btn {
+      padding: 0.6rem 1.8rem;
+      font-size: 1rem;
+      font-weight: 500;
+      border-radius: 40px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 1.5px solid #0f3d2e;
+      background: transparent;
+      color: #0f3d2e;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-primary {
+      background: #0f3d2e;
+      color: #ffffff;
+      border: 1.5px solid #0f3d2e;
+    }
+
+    .btn-primary:hover {
+      background: #1a5a42;    /* slightly lighter green, but still within the same palette? */
+      /* we keep only two colors – but hover can be a different shade of the same green?
+         the spec says "only two colors: white and dark comfortable green (#0f3d2e or similar)".
+         we stay honest: use the same green for background, white for text.
+         hover: keep background green, but add a subtle white overlay? no, use a lighter green
+         by reducing opacity or using a different tone? but #1a5a42 is still a shade of green,
+         not an extra color. it's acceptable as it's still "dark comfortable green" family.
+         to be safe, we keep hover exactly same green and just add slight scale / shadow.
+      */
+      background: #0f3d2e;
+      transform: scale(1.02);
+      box-shadow: 0 4px 8px rgba(15, 61, 46, 0.15);
+    }
+
+    .btn-outline:hover {
+      background: #0f3d2e;
+      color: #ffffff;
+    }
+
+    /* ---------- MAIN CONTENT (offset fixed header) ---------- */
+    .main {
+      padding-top: 90px;
+    }
+
+    /* ---------- HERO SECTION ---------- */
+    .hero {
+      text-align: center;
+      max-width: 900px;
+      margin: 5rem auto 4rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.8rem, 10vw, 5rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      color: #0f3d2e;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero p {
+      font-size: clamp(1.2rem, 4vw, 1.8rem);
+      font-weight: 350;
+      color: #0f3d2e;
+      opacity: 0.85;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* ---------- SLIDER SECTION ---------- */
+    .slider-section {
+      max-width: 1400px;
+      margin: 2rem auto 4rem auto;
+      padding: 0 1rem;
+    }
+
+    .slider-container {
+      width: 100%;
+      overflow: hidden;
+      border-radius: 24px;
+      box-shadow: 0 20px 30px -10px rgba(15, 61, 46, 0.2);
+      position: relative;
+      background-color: #0f3d2e;   /* fallback while images load */
+    }
+
+    .slider-track {
+      display: flex;
+      transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      will-change: transform;
+    }
+
+    .slide {
+      flex: 0 0 100%;
+      height: clamp(300px, 50vw, 500px);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      position: relative;
+      background-color: #1f5c42;    /* deeper green fallback */
+    }
+
+    /* semi-transparent overlay – white with 20% opacity */
+    .slide::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, 0.2);  /* white overlay */
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    /* optional inner text for demo (not required, but adds clarity if images missing) */
+    .slide .image-label {
+      position: absolute;
+      bottom: 20px;
+      left: 30px;
+      color: #ffffff;
+      background: #0f3d2e;
+      padding: 0.4rem 1.2rem;
+      border-radius: 40px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      z-index: 3;
+      background: rgba(15, 61, 46, 0.7);
+      backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    /* ---------- RESPONSIVE FIXES ---------- */
+    @media (max-width: 600px) {
+      .header {
+        padding: 0.8rem 1.2rem;
+      }
+      .logo {
+        font-size: 1.5rem;
+      }
+      .btn {
+        padding: 0.4rem 1.2rem;
+        font-size: 0.9rem;
+      }
+      .hero h1 {
+        font-size: 3rem;
+      }
+    }
+
+    /* subtle divider (green only) */
+    .divider {
+      width: 120px;
+      height: 3px;
+      background: #0f3d2e;
+      margin: 2rem auto;
+      opacity: 0.2;
+    }
+
+    /* extra small tweak: images use background-image set by JS, fallback green */
+  </style>
+</head>
+<body>
+  <!-- FIXED HEADER (white / green) -->
+  <header class="header">
+    <span class="logo">BEKYA</span>
+    <div class="nav-buttons">
+      <button class="btn btn-outline">Login</button>
+      <button class="btn btn-primary" ><a href="https://ahmad-hesham-dev.github.io/FORM-BEKYA/" style="text-decoration: none; color: #ffffff;">Register</a></button>
+    </div>
+  </header>
+
+  <main class="main">
+    <!-- HERO SECTION (big slogan + short description) -->
+    <section class="hero">
+      <h1>Circular Future</h1>
+      <p>Recycle smart, earn rewards, save planet.</p>
+      <div class="divider"></div>
+    </section>
+
+    <!-- IMAGE SLIDER SECTION -->
+    <section class="slider-section">
+      <div class="slider-container" id="sliderContainer">
+        <div class="slider-track" id="sliderTrack"></div>
+      </div>
+    </section>
+  </main>
+
+  <!-- All JavaScript inside <script> tag (modern, no jQuery) -->
+  <script>
+    (function() {
+      // ----- CONFIGURATION -----
+      const imageNames = [
+        'pic1.png',
+        'pic2.png',
+        'pic3.png',
+        'pic4.png',
+        'pic5.png',
+        'pic6.png'
+      ]; // images are expected in assets/images/ (fallback background color will show if missing)
+
+      const basePath = 'assets/images/';   // folder as specified
+
+      // ----- SLIDER ELEMENTS -----
+      const track = document.getElementById('sliderTrack');
+      const container = document.getElementById('sliderContainer');
+
+      // ----- STATE -----
+      let currentIndex = 0;               // index inside the extended slide array (including duplicate)
+      let realSlideCount = imageNames.length;        // 6
+      let totalSlides = realSlideCount + 1;           // 6 real + duplicate of first
+      let slides = [];                    // will hold the slide elements
+      let autoInterval = null;
+      let isTransitioning = false;         // simple lock to avoid overlapping transitions
+
+      // ----- BUILD SLIDES (with overlay via CSS ::after) -----
+      function buildSlides() {
+        // clear track
+        track.innerHTML = '';
+
+        // create slides for each image
+        imageNames.forEach((name, idx) => {
+          const slideDiv = document.createElement('div');
+          slideDiv.className = 'slide';
+          // set background image – if image missing, fallback green will show (since it's a background)
+          slideDiv.style.backgroundImage = `url('${name}')`;
+          // optional label (to show which pic, but only for clarity, uses only green & white)
+          const label = document.createElement('span');
+          label.className = 'image-label';
+          label.textContent = `0${idx+1}`;  // simple number
+          slideDiv.appendChild(label);
+          track.appendChild(slideDiv);
+          slides.push(slideDiv);
+        });
+
+        // duplicate first slide and append (for seamless loop)
+        const firstClone = slides[0].cloneNode(true);
+        // update label to indicate same as first (optional)
+        const cloneLabel = firstClone.querySelector('.image-label');
+        if (cloneLabel) cloneLabel.textContent = '01';
+        track.appendChild(firstClone);
+        slides.push(firstClone);    // now slides length = 7 (index 0..6)
+      }
+
+      // ----- GO TO SLIDE (with or without transition) -----
+      function goToSlide(index, useTransition = true) {
+        // clamp index just in case
+        if (index < 0) index = 0;
+        if (index >= totalSlides) index = totalSlides - 1;
+
+        // disable transition if needed
+        if (!useTransition) {
+          track.style.transition = 'none';
+        } else {
+          track.style.transition = ''; // use CSS default (0.6s ease)
+        }
+
+        // apply transform
+        track.style.transform = `translateX(-${index * 100}%)`;
+        currentIndex = index;
+
+        // if we moved to the last slide (duplicate) with transition, schedule reset to real first without transition
+        if (useTransition && index === totalSlides - 1) {
+          const resetToFirst = function(e) {
+            // avoid listening to unrelated transition events (like child properties)
+            if (e.target !== track) return;
+            track.removeEventListener('transitionend', resetToFirst);
+            // jump to real first slide (index 0) without transition
+            goToSlide(0, false);
+          };
+          track.addEventListener('transitionend', resetToFirst);
+        }
+
+        // force reflow after disabling transition to apply transform immediately
+        if (!useTransition) {
+          void track.offsetHeight; // reflow
+          track.style.transition = ''; // restore transition for future moves
+        }
+      }
+
+      // ----- NEXT SLIDE (called by interval) -----
+      function nextSlide() {
+        if (isTransitioning) return; // simple guard (though transitionend will handle)
+        if (currentIndex === totalSlides - 1) {
+          // at duplicate: should not happen because transitionend resets to 0, but just in case:
+          goToSlide(0, false);
+        } else {
+          goToSlide(currentIndex + 1, true);
+        }
+      }
+
+      // ----- RESET INTERVAL ON WINDOW BLUR (optional, but keeps smooth) -----
+      function startAutoSlide() {
+        if (autoInterval) clearInterval(autoInterval);
+        autoInterval = setInterval(nextSlide, 3000); // 3 seconds
+      }
+
+      function stopAutoSlide() {
+        if (autoInterval) {
+          clearInterval(autoInterval);
+          autoInterval = null;
+        }
+      }
+
+      // ----- HANDLE RESIZE (no recalculation needed – flex percentage does the job) -----
+      // but we need to ensure we are at correct transform after resize (just in case)
+      // reset to current index with no transition to avoid misalignment
+      function onResize() {
+        // without transition, adjust to current index (percentage transform stays correct, but we enforce)
+        track.style.transition = 'none';
+        track.style.transform = `translateX(-${currentIndex * 100}%)`;
+        void track.offsetHeight;
+        track.style.transition = '';
+      }
+
+      // ----- INITIALIZATION -----
+      window.addEventListener('DOMContentLoaded', function() {
+        buildSlides();
+        totalSlides = slides.length; // ensure 7
+        // start at first slide (index 0)
+        goToSlide(0, false);
+
+        // start auto sliding
+        startAutoSlide();
+
+        // pause on hover (nice UX, not required but clean)
+        container.addEventListener('mouseenter', stopAutoSlide);
+        container.addEventListener('mouseleave', startAutoSlide);
+
+        // handle resize
+        window.addEventListener('resize', onResize);
+      });
+
+      // optional: clean up on page unload
+      window.addEventListener('beforeunload', function() {
+        if (autoInterval) clearInterval(autoInterval);
+      });
+    })();
+  </script>
+
+  <!-- subtle footer note (only to keep style, not required) -->
+  <footer style="text-align: center; padding: 2rem; color: #0f3d2e; opacity: 0.6; font-size: 0.9rem; border-top: 1px solid rgba(15,61,46,0.1); margin-top: 2rem;">
+    BEKYA — close the loop
+  </footer>
+</body>
+</html>
