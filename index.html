@@ -67,21 +67,12 @@
     }
 
     .btn-primary:hover {
-      background: #1a5a42;    /* slightly lighter green, but still within the same palette? */
-      /* we keep only two colors – but hover can be a different shade of the same green?
-         the spec says "only two colors: white and dark comfortable green (#0f3d2e or similar)".
-         we stay honest: use the same green for background, white for text.
-         hover: keep background green, but add a subtle white overlay? no, use a lighter green
-         by reducing opacity or using a different tone? but #1a5a42 is still a shade of green,
-         not an extra color. it's acceptable as it's still "dark comfortable green" family.
-         to be safe, we keep hover exactly same green and just add slight scale / shadow.
-      */
       background: #0f3d2e;
       transform: scale(1.02);
       box-shadow: 0 4px 8px rgba(15, 61, 46, 0.15);
     }
 
-    .btn-outline:hover {
+    .btn-outline a:hover {
       background: #0f3d2e;
       color: #ffffff;
     }
@@ -162,22 +153,18 @@
       z-index: 2;
     }
 
-    /* optional inner text for demo (not required, but adds clarity if images missing) */
-    .slide .image-label {
-      position: absolute;
-      bottom: 20px;
-      left: 30px;
-      color: #ffffff;
-      background: #0f3d2e;
-      padding: 0.4rem 1.2rem;
-      border-radius: 40px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      letter-spacing: 0.3px;
-      z-index: 3;
-      background: rgba(15, 61, 46, 0.7);
-      backdrop-filter: blur(4px);
-      border: 1px solid rgba(255,255,255,0.2);
+    /* ---------- RECYCLING MESSAGE (added under slider) ---------- */
+    .recycling-message {
+      text-align: center;
+      max-width: 800px;
+      margin: 2.5rem auto 0 auto;
+      font-size: clamp(1.2rem, 4vw, 1.8rem);
+      font-weight: 350;
+      color: #0f3d2e;
+      opacity: 0.92;
+      line-height: 1.5;
+      padding: 0 1.5rem;
+      letter-spacing: -0.01em;
     }
 
     /* ---------- RESPONSIVE FIXES ---------- */
@@ -232,6 +219,13 @@
       <div class="slider-container" id="sliderContainer">
         <div class="slider-track" id="sliderTrack"></div>
       </div>
+      <!-- NEW: inspiring message under the pics (20-30 words) -->
+      <div class="recycling-message">
+        Every recycled bottle saves enough energy to power a laptop for 5 hours. One tree filters 60 lbs of pollution yearly. Together, small acts restore our only home — cleaner, greener, brighter. | كل زجاجة معاد تدويرها توفر طاقة تكفي لتشغيل حاسوب محمول لمدة خمس ساعات.
+وكل شجرة تقوم بتصفية 60 رطلاً من الملوثات سنويًا.
+معًا، تساهم هذه الأعمال الصغيرة في استعادة موطننا الوحيد — ليصبح أنظف، وأكثر خضرة، وأكثر إشراقًا.
+
+      </div>
     </section>
   </main>
 
@@ -262,31 +256,25 @@
       let autoInterval = null;
       let isTransitioning = false;         // simple lock to avoid overlapping transitions
 
-      // ----- BUILD SLIDES (with overlay via CSS ::after) -----
+      // ----- BUILD SLIDES (with overlay via CSS ::after, NO labels) -----
       function buildSlides() {
         // clear track
         track.innerHTML = '';
 
-        // create slides for each image
+        // create slides for each image — WITHOUT any text label (removed as requested)
         imageNames.forEach((name, idx) => {
           const slideDiv = document.createElement('div');
           slideDiv.className = 'slide';
           // set background image – if image missing, fallback green will show (since it's a background)
           slideDiv.style.backgroundImage = `url('${name}')`;
-          // optional label (to show which pic, but only for clarity, uses only green & white)
-          const label = document.createElement('span');
-          label.className = 'image-label';
-          label.textContent = `0${idx+1}`;  // simple number
-          slideDiv.appendChild(label);
+          // NO label span created — clean image with only the white overlay
           track.appendChild(slideDiv);
           slides.push(slideDiv);
         });
 
         // duplicate first slide and append (for seamless loop)
         const firstClone = slides[0].cloneNode(true);
-        // update label to indicate same as first (optional)
-        const cloneLabel = firstClone.querySelector('.image-label');
-        if (cloneLabel) cloneLabel.textContent = '01';
+        // clone will also have no label (original had none)
         track.appendChild(firstClone);
         slides.push(firstClone);    // now slides length = 7 (index 0..6)
       }
@@ -394,4 +382,5 @@
 </body>
 
 </html>
+
 
