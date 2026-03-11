@@ -15,11 +15,44 @@
     body {
       font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
       background-color: #ffffff;
-      color: #0f3d2e;               /* dark comfortable green */
+      color: #0f3d2e;
       line-height: 1.5;
+      transition: background-color 0.3s, color 0.3s;
     }
 
-    /* ---------- FIXED HEADER (white + green, subtle shadow) ---------- */
+    /* Dark mode variables */
+    body.dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .header {
+      background-color: #1e1e1e;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    body.dark-mode .btn {
+      border-color: #e0e0e0;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .btn-primary {
+      background: #2e7d5e;
+      border-color: #2e7d5e;
+      color: #ffffff;
+    }
+
+    body.dark-mode .btn-outline:hover {
+      background: #e0e0e0;
+      color: #121212;
+    }
+
+    body.dark-mode .footer {
+      border-top-color: rgba(255,255,255,0.1);
+      color: #aaa;
+    }
+
+    /* ---------- FIXED HEADER ---------- */
     .header {
       position: fixed;
       top: 0;
@@ -32,18 +65,21 @@
       justify-content: space-between;
       align-items: center;
       z-index: 100;
+      transition: background-color 0.3s, box-shadow 0.3s;
     }
 
     .logo {
       font-size: 1.8rem;
       font-weight: 600;
       letter-spacing: -0.02em;
-      color: #0f3d2e;
+      color: inherit;
     }
 
     .nav-buttons {
       display: flex;
-      gap: 1rem;
+      gap: 0.75rem;
+      align-items: center;
+      flex-wrap: wrap;
     }
 
     .btn {
@@ -73,12 +109,31 @@
     }
 
     .btn-outline:hover {
-        transform: scale(1.02);
-      box-shadow: 0 4px 8px rgba(15, 61, 46, 0.15);
+      background: #0f3d2e;
       color: #ffffff;
     }
 
-    /* ---------- MAIN CONTENT (offset fixed header) ---------- */
+    /* Toggle buttons (theme & language) */
+    .toggle-btn {
+      padding: 0.6rem 1.2rem;
+      font-size: 1rem;
+      border-radius: 40px;
+      border: 1.5px solid currentColor;
+      background: transparent;
+      color: inherit;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .toggle-btn:hover {
+      background: rgba(15, 61, 46, 0.1);
+    }
+
+    body.dark-mode .toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* ---------- MAIN CONTENT ---------- */
     .main {
       padding-top: 90px;
     }
@@ -96,17 +151,25 @@
       font-weight: 700;
       line-height: 1.1;
       letter-spacing: -0.02em;
-      color: #0f3d2e;
+      color: inherit;
       margin-bottom: 1.5rem;
     }
 
     .hero p {
       font-size: clamp(1.2rem, 4vw, 1.8rem);
       font-weight: 350;
-      color: #0f3d2e;
+      color: inherit;
       opacity: 0.85;
       max-width: 600px;
       margin: 0 auto;
+    }
+
+    .divider {
+      width: 120px;
+      height: 3px;
+      background: currentColor;
+      margin: 2rem auto;
+      opacity: 0.2;
     }
 
     /* ---------- SLIDER SECTION ---------- */
@@ -122,7 +185,7 @@
       border-radius: 24px;
       box-shadow: 0 20px 30px -10px rgba(15, 61, 46, 0.2);
       position: relative;
-      background-color: #0f3d2e;   /* fallback while images load */
+      background-color: #0f3d2e;
     }
 
     .slider-track {
@@ -134,41 +197,111 @@
     .slide {
       flex: 0 0 100%;
       height: clamp(300px, 50vw, 500px);
-      background-size: cover;
+      background-size: contain;
       background-position: center;
       background-repeat: no-repeat;
       position: relative;
-      background-color: #1f5c42;    /* deeper green fallback */
+      background-color: #1f5c42;    /* fallback green */
     }
 
-    /* semi-transparent overlay – white with 20% opacity */
-    .slide::after {
-      content: '';
+    /* Glass-blur overlays for left/right empty space */
+    .slide-blur-left,
+    .slide-blur-right {
       position: absolute;
       top: 0;
-      left: 0;
-      width: 100%;
       height: 100%;
-      background-color: rgba(255, 255, 255, 0.2);  /* white overlay */
+      width: 0;                     /* dynamically set by JS */
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       pointer-events: none;
-      z-index: 2;
+      z-index: 5;
+      transition: width 0.2s ease;
     }
 
-    /* ---------- RECYCLING MESSAGE (added under slider) ---------- */
-    .recycling-message {
+    .slide-blur-left {
+      left: 0;
+    }
+
+    .slide-blur-right {
+      right: 0;
+    }
+
+    /* ---------- ABOUT SECTION (new) ---------- */
+    .about-section {
+      max-width: 1000px;
+      margin: 6rem auto;
+      padding: 0 2rem;
       text-align: center;
-      max-width: 800px;
-      margin: 2.5rem auto 0 auto;
-      font-size: clamp(1.2rem, 4vw, 1.8rem);
-      font-weight: 350;
-      color: #0f3d2e;
-      opacity: 0.92;
-      line-height: 1.5;
-      padding: 0 1.5rem;
-      letter-spacing: -0.01em;
     }
 
-    /* ---------- RESPONSIVE FIXES ---------- */
+    .about-section h2 {
+      font-size: 2.5rem;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      color: inherit;
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 2rem;
+      margin-top: 3rem;
+    }
+
+    .about-card {
+      background: rgba(15, 61, 46, 0.05);
+      border-radius: 24px;
+      padding: 2rem 1.5rem;
+      transition: transform 0.2s;
+    }
+
+    body.dark-mode .about-card {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .about-card:hover {
+      transform: translateY(-6px);
+    }
+
+    .about-card h3 {
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
+      color: inherit;
+    }
+
+    .about-card p {
+      font-size: 1rem;
+      opacity: 0.8;
+      color: inherit;
+    }
+
+    /* ---------- FOOTER ---------- */
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      color: inherit;
+      opacity: 0.6;
+      font-size: 0.9rem;
+      border-top: 1px solid rgba(15,61,46,0.1);
+      margin-top: 2rem;
+      transition: border-color 0.3s;
+    }
+
+    /* RTL support */
+    html[dir="rtl"] .slide-blur-left {
+      left: auto;
+      right: 0;
+    }
+    html[dir="rtl"] .slide-blur-right {
+      right: auto;
+      left: 0;
+    }
+    html[dir="rtl"] .nav-buttons {
+      flex-direction: row-reverse;
+    }
+
+    /* Responsive */
     @media (max-width: 600px) {
       .header {
         padding: 0.8rem 1.2rem;
@@ -176,64 +309,72 @@
       .logo {
         font-size: 1.5rem;
       }
-      .btn {
-        padding: 0.4rem 1.2rem;
-        font-size: 0.9rem;
+      .btn, .toggle-btn {
+        padding: 0.4rem 1rem;
+        font-size: 0.85rem;
       }
-      .hero h1 {
-        font-size: 3rem;
+      .about-section h2 {
+        font-size: 2rem;
       }
     }
-
-    /* subtle divider (green only) */
-    .divider {
-      width: 120px;
-      height: 3px;
-      background: #0f3d2e;
-      margin: 2rem auto;
-      opacity: 0.2;
-    }
-
-    /* extra small tweak: images use background-image set by JS, fallback green */
   </style>
 </head>
 <body>
-  <!-- FIXED HEADER (white / green) -->
+  <!-- FIXED HEADER -->
   <header class="header">
-    <span class="logo">BEKYA</span>
+    <span class="logo" data-i18n="logo">BEKYA</span>
     <div class="nav-buttons">
-      <button class="btn btn-outline"><a href="https://ahmad-hesham-dev.github.io/login-bekya/" style="text-decoration: none; color: #0f3d2e;">Login</a></button>
-      <button class="btn btn-primary" ><a href="https://ahmad-hesham-dev.github.io/FORM-BEKYA/" style="text-decoration: none; color: #ffffff;">Register</a></button>
+      <button class="toggle-btn" id="themeToggle" data-i18n="themeToggle">🌓 Dark</button>
+      <button class="toggle-btn" id="langToggle" data-i18n="langToggle">EN</button>
+      <button class="btn btn-outline" data-i18n="login">Login</button>
+      <button class="btn btn-primary" data-i18n="register"><a href="https://ahmad-hesham-dev.github.io/FORM-BEKYA/" style="text-decoration: none; color: inherit;">Register</a></button>
     </div>
   </header>
 
   <main class="main">
-    <!-- HERO SECTION (big slogan + short description) -->
+    <!-- HERO SECTION -->
     <section class="hero">
-      <h1>Circular Future</h1>
-      <p>Recycle smart, earn rewards, save planet.</p>
+      <h1 data-i18n="heroTitle">Circular Future</h1>
+      <p data-i18n="heroSub">Recycle smart, earn rewards, save planet.</p>
       <div class="divider"></div>
     </section>
 
-    <!-- IMAGE SLIDER SECTION -->
+    <!-- IMAGE SLIDER SECTION (improved with glass blur sides) -->
     <section class="slider-section">
       <div class="slider-container" id="sliderContainer">
         <div class="slider-track" id="sliderTrack"></div>
       </div>
-      <!-- NEW: inspiring message under the pics (20-30 words) -->
-      <div class="recycling-message">
-        Every recycled bottle saves enough energy to power a laptop for 5 hours. One tree filters 60 lbs of pollution yearly. Together, small acts restore our only home — cleaner, greener, brighter. | كل زجاجة معاد تدويرها توفر طاقة تكفي لتشغيل حاسوب محمول لمدة خمس ساعات.
-وكل شجرة تقوم بتصفية 60 رطلاً من الملوثات سنويًا.
-معًا، تساهم هذه الأعمال الصغيرة في استعادة موطننا الوحيد — ليصبح أنظف، وأكثر خضرة، وأكثر إشراقًا.
+    </section>
 
+    <!-- NEW ABOUT SECTION (content updated as requested) -->
+    <section class="about-section">
+      <h2 data-i18n="aboutTitle">About Bekya</h2>
+      <div class="about-grid">
+        <div class="about-card">
+          <h3 data-i18n="about1Title">Exchange for points</h3>
+          <p data-i18n="about1Text">Turn recyclables into points you can use at local partners.</p>
+        </div>
+        <div class="about-card">
+          <h3 data-i18n="about2Title">Sustainability</h3>
+          <p data-i18n="about2Text">We help close the loop by connecting sellers with recycling outlets.</p>
+        </div>
+        <div class="about-card">
+          <h3 data-i18n="about3Title">Community driven</h3>
+          <p data-i18n="about3Text">Join a growing network of eco‑conscious individuals and businesses.</p>
+        </div>
+        <div class="about-card">
+          <h3 data-i18n="about4Title">Easy & smart</h3>
+          <p data-i18n="about4Text">Simple process, real impact. Track your contributions and rewards.</p>
+        </div>
       </div>
     </section>
   </main>
 
-  <!-- All JavaScript inside <script> tag (modern, no jQuery) -->
+  <footer class="footer" data-i18n="footer">BEKYA — close the loop</footer>
+
   <script>
     (function() {
-      // ----- CONFIGURATION -----
+      // ==================== CONFIG ====================
       const imageNames = [
         'pic1.png',
         'pic2.png',
@@ -241,96 +382,155 @@
         'pic4.png',
         'pic5.png',
         'pic6.png'
-      ]; // images are expected in assets/images/ (fallback background color will show if missing)
-
+      ];
       const basePath = 'assets/images/';   // folder as specified
 
-      // ----- SLIDER ELEMENTS -----
+      // ==================== SLIDER ELEMENTS ====================
       const track = document.getElementById('sliderTrack');
       const container = document.getElementById('sliderContainer');
 
-      // ----- STATE -----
-      let currentIndex = 0;               // index inside the extended slide array (including duplicate)
-      let realSlideCount = imageNames.length;        // 6
-      let totalSlides = realSlideCount + 1;           // 6 real + duplicate of first
-      let slides = [];                    // will hold the slide elements
+      let currentIndex = 0;
+      let realSlideCount = imageNames.length;
+      let totalSlides = realSlideCount + 1; // + duplicate of first
+      let slides = [];
       let autoInterval = null;
-      let isTransitioning = false;         // simple lock to avoid overlapping transitions
+      let imageAspects = []; // store natural width/height ratio
 
-      // ----- BUILD SLIDES (with overlay via CSS ::after, NO labels) -----
+      // ==================== BUILD SLIDES (without counter label) ====================
       function buildSlides() {
-        // clear track
         track.innerHTML = '';
 
-        // create slides for each image — WITHOUT any text label (removed as requested)
         imageNames.forEach((name, idx) => {
           const slideDiv = document.createElement('div');
           slideDiv.className = 'slide';
-          // set background image – if image missing, fallback green will show (since it's a background)
           slideDiv.style.backgroundImage = `url('${name}')`;
-          // NO label span created — clean image with only the white overlay
+
+          // Add left and right glass-blur overlays
+          const leftBlur = document.createElement('div');
+          leftBlur.className = 'slide-blur-left';
+          const rightBlur = document.createElement('div');
+          rightBlur.className = 'slide-blur-right';
+          slideDiv.appendChild(leftBlur);
+          slideDiv.appendChild(rightBlur);
+
           track.appendChild(slideDiv);
           slides.push(slideDiv);
         });
 
-        // duplicate first slide and append (for seamless loop)
+        // duplicate first slide for seamless loop
         const firstClone = slides[0].cloneNode(true);
-        // clone will also have no label (original had none)
         track.appendChild(firstClone);
-        slides.push(firstClone);    // now slides length = 7 (index 0..6)
+        slides.push(firstClone);
+        totalSlides = slides.length;
+
+        // Load image natural dimensions for aspect ratios
+        loadImageAspects();
       }
 
-      // ----- GO TO SLIDE (with or without transition) -----
+      // Load image natural sizes
+      function loadImageAspects() {
+        let loaded = 0;
+        imageNames.forEach((name, i) => {
+          const img = new Image();
+          img.src = name;
+          img.onload = function() {
+            imageAspects[i] = img.naturalWidth / img.naturalHeight;
+            loaded++;
+            if (loaded === imageNames.length) {
+              updateBlurOverlays(); // initial update after all images loaded
+            }
+          };
+          // fallback if image fails: assume square (ratio 1)
+          img.onerror = function() {
+            imageAspects[i] = 1;
+            loaded++;
+            if (loaded === imageNames.length) updateBlurOverlays();
+          };
+        });
+      }
+
+      // Calculate and set blur overlay widths based on contain
+      function updateBlurOverlays() {
+        if (!container || slides.length === 0 || imageAspects.length === 0) return;
+        const containerWidth = container.offsetWidth;
+        const containerHeight = slides[0].offsetHeight; // all slides same height
+        if (containerHeight === 0) return;
+
+        const containerAspect = containerWidth / containerHeight;
+
+        slides.forEach((slide, idx) => {
+          // Determine which real image this slide corresponds to
+          let imgIdx = idx;
+          if (idx >= realSlideCount) imgIdx = 0; // duplicate uses first image
+          const aspect = imageAspects[imgIdx] || 1;
+
+          let imageWidth, imageHeight;
+          if (aspect > containerAspect) {
+            // image wider than container -> width = container width, height = containerWidth / aspect
+            imageWidth = containerWidth;
+            imageHeight = containerWidth / aspect;
+          } else {
+            // image taller or equal -> height = container height, width = containerHeight * aspect
+            imageHeight = containerHeight;
+            imageWidth = containerHeight * aspect;
+          }
+
+          // empty space on sides
+          const emptySpace = (containerWidth - imageWidth) / 2;
+          if (emptySpace > 0) {
+            const leftBlur = slide.querySelector('.slide-blur-left');
+            const rightBlur = slide.querySelector('.slide-blur-right');
+            if (leftBlur && rightBlur) {
+              leftBlur.style.width = emptySpace + 'px';
+              rightBlur.style.width = emptySpace + 'px';
+            }
+          } else {
+            // no empty space (image fills exactly or wider) -> set width 0
+            const leftBlur = slide.querySelector('.slide-blur-left');
+            const rightBlur = slide.querySelector('.slide-blur-right');
+            if (leftBlur && rightBlur) {
+              leftBlur.style.width = '0px';
+              rightBlur.style.width = '0px';
+            }
+          }
+        });
+      }
+
+      // ==================== SLIDER NAVIGATION ====================
       function goToSlide(index, useTransition = true) {
-        // clamp index just in case
         if (index < 0) index = 0;
         if (index >= totalSlides) index = totalSlides - 1;
 
-        // disable transition if needed
-        if (!useTransition) {
-          track.style.transition = 'none';
-        } else {
-          track.style.transition = ''; // use CSS default (0.6s ease)
-        }
-
-        // apply transform
+        track.style.transition = useTransition ? '' : 'none';
         track.style.transform = `translateX(-${index * 100}%)`;
         currentIndex = index;
 
-        // if we moved to the last slide (duplicate) with transition, schedule reset to real first without transition
         if (useTransition && index === totalSlides - 1) {
           const resetToFirst = function(e) {
-            // avoid listening to unrelated transition events (like child properties)
             if (e.target !== track) return;
             track.removeEventListener('transitionend', resetToFirst);
-            // jump to real first slide (index 0) without transition
             goToSlide(0, false);
           };
           track.addEventListener('transitionend', resetToFirst);
         }
 
-        // force reflow after disabling transition to apply transform immediately
         if (!useTransition) {
-          void track.offsetHeight; // reflow
-          track.style.transition = ''; // restore transition for future moves
+          void track.offsetHeight; // force reflow
+          track.style.transition = '';
         }
       }
 
-      // ----- NEXT SLIDE (called by interval) -----
       function nextSlide() {
-        if (isTransitioning) return; // simple guard (though transitionend will handle)
         if (currentIndex === totalSlides - 1) {
-          // at duplicate: should not happen because transitionend resets to 0, but just in case:
           goToSlide(0, false);
         } else {
           goToSlide(currentIndex + 1, true);
         }
       }
 
-      // ----- RESET INTERVAL ON WINDOW BLUR (optional, but keeps smooth) -----
       function startAutoSlide() {
         if (autoInterval) clearInterval(autoInterval);
-        autoInterval = setInterval(nextSlide, 3000); // 3 seconds
+        autoInterval = setInterval(nextSlide, 3000);
       }
 
       function stopAutoSlide() {
@@ -340,49 +540,156 @@
         }
       }
 
-      // ----- HANDLE RESIZE (no recalculation needed – flex percentage does the job) -----
-      // but we need to ensure we are at correct transform after resize (just in case)
-      // reset to current index with no transition to avoid misalignment
-      function onResize() {
-        // without transition, adjust to current index (percentage transform stays correct, but we enforce)
-        track.style.transition = 'none';
-        track.style.transform = `translateX(-${currentIndex * 100}%)`;
-        void track.offsetHeight;
-        track.style.transition = '';
+      // ==================== RESIZE HANDLER ====================
+      let resizeTimer;
+      window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+          updateBlurOverlays(); // recalculate blur widths
+          // ensure correct slide position
+          track.style.transition = 'none';
+          track.style.transform = `translateX(-${currentIndex * 100}%)`;
+          void track.offsetHeight;
+          track.style.transition = '';
+        }, 100);
+      });
+
+      // ==================== THEME MANAGEMENT ====================
+      const themeToggle = document.getElementById('themeToggle');
+      const body = document.body;
+
+      function applyTheme(theme) {
+        if (theme === 'dark') {
+          body.classList.add('dark-mode');
+          themeToggle.textContent = localStorage.getItem('language') === 'ar' ? '☀️ فاتح' : '☀️ Light';
+        } else {
+          body.classList.remove('dark-mode');
+          themeToggle.textContent = localStorage.getItem('language') === 'ar' ? '🌓 داكن' : '🌓 Dark';
+        }
+        localStorage.setItem('theme', theme);
       }
 
-      // ----- INITIALIZATION -----
+      themeToggle.addEventListener('click', () => {
+        const newTheme = body.classList.contains('dark-mode') ? 'light' : 'dark';
+        applyTheme(newTheme);
+      });
+
+      // ==================== LANGUAGE MANAGEMENT ====================
+      const langToggle = document.getElementById('langToggle');
+      const htmlElem = document.documentElement;
+
+      const translations = {
+        en: {
+          logo: 'BEKYA',
+          themeToggle: '🌓 Dark',
+          langToggle: 'EN',
+          login: 'Login',
+          register: 'Register',
+          heroTitle: 'Circular Future',
+          heroSub: 'Recycle smart, earn rewards, save planet.',
+          aboutTitle: 'About Bekya',
+          about1Title: 'Exchange for points',
+          about1Text: 'Turn recyclables into points you can use at local partners.',
+          about2Title: 'Sustainability',
+          about2Text: 'We help close the loop by connecting sellers with recycling outlets.',
+          about3Title: 'Community driven',
+          about3Text: 'Join a growing network of eco‑conscious individuals and businesses.',
+          about4Title: 'Easy & smart',
+          about4Text: 'Simple process, real impact. Track your contributions and rewards.',
+          footer: 'BEKYA — close the loop'
+        },
+        ar: {
+          logo: 'بيكيا',
+          themeToggle: '🌓 داكن',
+          langToggle: 'AR',
+          login: 'تسجيل الدخول',
+          register: 'إنشاء حساب',
+          heroTitle: 'مستقبل دائري',
+          heroSub: 'أعد التدوير بذكاء، واكسب النقاط، وأنقذ الكوكب',
+          aboutTitle: 'عن بيكيا',
+          about1Title: 'استبدل بالنقاط',
+          about1Text: 'حوِّل المواد القابلة للتدوير إلى نقاط يمكنك استخدامها لدى الشركاء المحليين.',
+          about2Title: 'الاستدامة',
+          about2Text: 'نساعد في إغلاق الحلقة من خلال ربط البائعين بمنافذ إعادة التدوير.',
+          about3Title: 'مجتمع داعم',
+          about3Text: 'انضم إلى شبكة متنامية من الأفراد والشركات المهتمة بالبيئة.',
+          about4Title: 'سهل وذكي',
+          about4Text: 'عملية بسيطة، تأثير حقيقي. تابع مساهماتك ومكافآتك.',
+          footer: 'بيكيا — أكمل الحلقة'
+        }
+      };
+
+      function applyLanguage(lang) {
+        const elements = document.querySelectorAll('[data-i18n]');
+        elements.forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if (translations[lang] && translations[lang][key]) {
+            // Special handling for elements with nested links
+            if (key === 'register' && el.classList.contains('btn-primary')) {
+              el.innerHTML = `<a href="https://ahmad-hesham-dev.github.io/FORM-BEKYA/" style="text-decoration: none; color: inherit;">${translations[lang][key]}</a>`;
+            } else {
+              el.textContent = translations[lang][key];
+            }
+          }
+        });
+
+        // Update theme toggle text (it was possibly overwritten)
+        if (body.classList.contains('dark-mode')) {
+          themeToggle.textContent = lang === 'en' ? '☀️ Light' : '☀️ فاتح';
+        } else {
+          themeToggle.textContent = lang === 'en' ? '🌓 Dark' : '🌓 داكن';
+        }
+
+        htmlElem.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        localStorage.setItem('language', lang);
+      }
+
+      langToggle.addEventListener('click', () => {
+        const currentLang = localStorage.getItem('language') || 'en';
+        const newLang = currentLang === 'en' ? 'ar' : 'en';
+        applyLanguage(newLang);
+      });
+
+      // ==================== LOAD STORED PREFERENCES ====================
+      function loadStoredPreferences() {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme) {
+          applyTheme(savedTheme);
+        } else {
+          applyTheme('light'); // default
+        }
+
+        const savedLang = localStorage.getItem('language');
+        if (savedLang) {
+          applyLanguage(savedLang);
+        } else {
+          applyLanguage('en'); // default
+        }
+      }
+
+      // ==================== INIT ====================
       window.addEventListener('DOMContentLoaded', function() {
         buildSlides();
-        totalSlides = slides.length; // ensure 7
-        // start at first slide (index 0)
         goToSlide(0, false);
-
-        // start auto sliding
         startAutoSlide();
 
-        // pause on hover (nice UX, not required but clean)
         container.addEventListener('mouseenter', stopAutoSlide);
         container.addEventListener('mouseleave', startAutoSlide);
 
-        // handle resize
-        window.addEventListener('resize', onResize);
+        loadStoredPreferences();
+
+        // Initial blur update after a short delay (ensures container dimensions)
+        setTimeout(updateBlurOverlays, 150);
       });
 
-      // optional: clean up on page unload
       window.addEventListener('beforeunload', function() {
         if (autoInterval) clearInterval(autoInterval);
       });
     })();
   </script>
-
-  <!-- subtle footer note (only to keep style, not required) -->
-  <footer style="text-align: center; padding: 2rem; color: #0f3d2e; opacity: 0.6; font-size: 0.9rem; border-top: 1px solid rgba(15,61,46,0.1); margin-top: 2rem;">
-    BEKYA — close the loop
-  </footer>
 </body>
-
 </html>
+
 
 
 
