@@ -382,8 +382,8 @@
     <span class="logo" data-i18n="logo">بكيا</span>
     <div class="nav-buttons">
       <!-- Only login/register remain -->
-      <button class="btn btn-outline" data-i18n="login"><a href="https://ahmad-hesham-dev.github.io/login-bekya/" style="text-decoration: none; color: inherit;">تسجيل دخول</a></button>
-      <button class="btn btn-primary" data-i18n="register"><a href="https://ahmad-hesham-dev.github.io/FORM-BEKYA/" style="text-decoration: none; color: inherit;">إنشاء حساب</a></button>
+      <button class="btn btn-outline" data-i18n="login"><a href="login.html" style="text-decoration: none; color: inherit;">تسجيل دخول</a></button>
+      <button class="btn btn-primary" data-i18n="register"><a href="register.html" style="text-decoration: none; color: inherit;">إنشاء حساب</a></button>
     </div>
   </header>
 
@@ -696,9 +696,9 @@
           if (translations[lang] && translations[lang][key]) {
             // Special handling for elements with nested links
             if (key === 'register' && el.classList.contains('btn-primary')) {
-              el.innerHTML = `<a href="https://ahmad-hesham-dev.github.io/FORM-BEKYA/" style="text-decoration: none; color: inherit;">${translations[lang][key]}</a>`;
+              el.innerHTML = `<a href="register.html" style="text-decoration: none; color: inherit;">${translations[lang][key]}</a>`;
             } else if (key === 'login' && el.classList.contains('btn-outline')) {
-              el.innerHTML = `<a href="https://ahmad-hesham-dev.github.io/login-bekya/" style="text-decoration: none; color: inherit;">${translations[lang][key]}</a>`;
+              el.innerHTML = `<a href="login.html" style="text-decoration: none; color: inherit;">${translations[lang][key]}</a>`;
             } else {
               el.textContent = translations[lang][key];
             }

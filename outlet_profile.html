@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>Outlet · ReCircle</title>
+  <!-- Font Awesome 6 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Dexie.js -->
+  <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+  <style>
+    /* (existing styles – unchanged) */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      transition: background-color 0.25s ease, color 0.2s ease, border-color 0.2s, box-shadow 0.2s;
+    }
+
+    body {
+      --bg-primary: #ffffff;
+      --bg-surface: #f8faf8;
+      --text-primary: #0f5132;
+      --text-secondary: #2d6a4f;
+      --border-light: #d0e0d5;
+      --card-bg: #ffffff;
+      --shadow: 0 8px 20px rgba(15, 81, 50, 0.08);
+      --hover-glow: 0 4px 12px rgba(15, 81, 50, 0.25);
+      --nav-hover: #e7f3ec;
+      --accent-green: #0f5132;
+      --icon-filter: none;
+      --delete-bg: rgba(220, 38, 38, 0.1);
+      --delete-color: #b91c1c;
+    }
+
+    body.dark {
+      --bg-primary: #123123;
+      --bg-surface: #1d2c26;
+      --text-primary: #ffffff;
+      --text-secondary: #e0f0e5;
+      --border-light: #132b1f;
+      --card-bg: #013616;
+      --shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      --hover-glow: 0 4px 16px rgba(46, 46, 46, 0.2);
+      --nav-hover: #002412;
+      --accent-green: #ffffff;
+      --icon-filter: brightness(0) invert(1);
+      --delete-bg: rgba(220, 38, 38, 0.3);
+      --delete-color: #fca5a5;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      overflow: hidden;
+      margin: 0;
+      line-height: 1.5;
+    }
+
+    .dashboard {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    .header {
+      background-color: var(--bg-surface);
+      padding: 0.8rem 1.8rem;
+      border-bottom: 1px solid var(--border-light);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+    }
+
+    .logo h2 {
+      font-weight: 600;
+      font-size: 1.6rem;
+      letter-spacing: -0.5px;
+      color: var(--accent-green);
+    }
+
+    .header-controls {
+      display: flex;
+      gap: 1.2rem;
+      align-items: center;
+    }
+
+    .toggle-btn {
+      background: transparent;
+      border: 1px solid var(--border-light);
+      border-radius: 40px;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.25s;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    }
+
+    .toggle-btn i {
+      font-size: 1.2rem;
+    }
+
+    .toggle-btn:hover {
+      box-shadow: var(--hover-glow);
+      border-color: var(--accent-green);
+      transform: scale(1.02);
+    }
+
+    .main-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      flex-direction: row;
+    }
+
+    body[dir="rtl"] .main-layout {
+      flex-direction: row-reverse;
+    }
+
+    .sidebar {
+      width: 260px;
+      background-color: var(--bg-surface);
+      border-right: 1px solid var(--border-light);
+      padding: 2rem 0.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      overflow-y: auto;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+    }
+
+    body[dir="rtl"] .sidebar {
+      border-right: none;
+      border-left: 1px solid var(--border-light);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.9rem 1.5rem;
+      border-radius: 40px;
+      font-weight: 500;
+      color: var(--text-primary);
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+      font-size: 1rem;
+    }
+
+    .nav-item i {
+      font-size: 1.3rem;
+      width: 28px;
+      color: var(--accent-green);
+    }
+
+    .nav-item:hover {
+      background-color: var(--nav-hover);
+      box-shadow: var(--hover-glow);
+      transform: translateX(4px);
+    }
+
+    .nav-item.active {
+      background-color: var(--accent-green);
+      color: var(--bg-primary);
+      box-shadow: 0 8px 16px rgba(15,81,50,0.3);
+    }
+    .nav-item.active i {
+      color: var(--bg-primary);
+    }
+
+    .content-panel {
+      flex: 1;
+      padding: 1.8rem 2rem;
+      overflow-y: auto;
+      background-color: var(--bg-primary);
+      scroll-behavior: smooth;
+    }
+
+    .section {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .section.active-section {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0.4; transform: translateY(6px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background-color: var(--card-bg);
+      border-radius: 28px;
+      padding: 1.6rem 1.4rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+      transition: transform 0.2s, box-shadow 0.3s;
+    }
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 28px rgba(15,81,50,0.15);
+    }
+    .stat-title {
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+    }
+    .stat-value {
+      font-size: 2.4rem;
+      font-weight: 700;
+      margin: 0.4rem 0 0.2rem;
+    }
+    .stat-trend {
+      font-size: 0.9rem;
+      color: #2b8c5e;
+      display: flex;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .form-panel {
+      background-color: var(--card-bg);
+      border-radius: 32px;
+      padding: 2rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+      max-width: 700px;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    label {
+      font-weight: 500;
+      display: block;
+      margin-bottom: 0.4rem;
+      color: var(--text-secondary);
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.9rem 1.2rem;
+      border-radius: 40px;
+      border: 1px solid var(--border-light);
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      font-size: 1rem;
+      transition: 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent-green);
+      box-shadow: 0 0 0 3px rgba(15,81,50,0.2);
+    }
+    .btn-primary {
+      background-color: var(--accent-green);
+      color: var(--bg-primary);
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: 0.25s;
+    }
+    .btn-primary:hover {
+      opacity: 0.9;
+      box-shadow: var(--hover-glow);
+      transform: scale(1.02);
+    }
+
+    .records-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    .record-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      padding: 1rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+      position: relative;
+    }
+    .record-card img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 18px;
+      margin-bottom: 0.8rem;
+      border: 2px solid var(--border-light);
+    }
+    .record-card p {
+      margin: 0.2rem 0;
+    }
+
+    .delete-record-btn {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: var(--delete-bg);
+      color: var(--delete-color);
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1rem;
+      backdrop-filter: blur(2px);
+      transition: all 0.2s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .delete-record-btn:hover {
+      transform: scale(1.1);
+      background: rgba(220, 38, 38, 0.3);
+    }
+    body[dir="rtl"] .delete-record-btn {
+      right: auto;
+      left: 12px;
+    }
+
+    @media (max-width: 700px) {
+      .sidebar {
+        width: 80px;
+        padding: 1rem 0.2rem;
+      }
+      .nav-item span {
+        display: none;
+      }
+      .nav-item i {
+        font-size: 1.8rem;
+        margin: 0 auto;
+      }
+      .content-panel {
+        padding: 1rem;
+      }
+      .header {
+        padding: 0.6rem 1rem;
+      }
+    }
+    @media (max-width: 480px) {
+      .stat-value {
+        font-size: 1.8rem;
+      }
+      .form-panel {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+    <header class="header">
+      <div class="logo">
+        <h2 data-i18n="appTitle">Outlet · ReCircle</h2>
+      </div>
+    </header>
+
+    <div class="main-layout" id="mainLayout">
+        <section id="profile" class="section active-section">
+          <h2 data-i18n="profileTitle">Outlet Profile</h2>
+          <div class="form-panel">
+            <p><strong data-i18n="profileUsernameLabel">Username:</strong> <span id="profile-username"></span></p>
+            <p><strong data-i18n="profilePhoneLabel">Phone:</strong> <span id="profile-phone"></span></p>
+            <p><strong data-i18n="profileRoleLabel">Role:</strong> <span id="profile-role"></span></p>
+          </div>
+        </section>
+          weightPlaceholder: '450',
+          imageLabel: 'Upload Image',
+          imageHint: 'Real image will be stored',
+          recordButton: 'Record & add points',
+          recordsTitle: 'Material Records',
+          requestsTitle: 'Seller Requests',
+          statsTitle: 'Detailed Statistics',
+          breakdownTitle: 'Material breakdown (last 2h trend)',
+          profileTitle: 'Outlet Profile',
+          profileUsernameLabel: 'Username:',
+          profilePhoneLabel: 'Phone:',
+          profileRoleLabel: 'Role:',
+          settingsTitle: 'Settings',
+          themeToggle: 'Light / Dark',
+          settingsHint: 'Appearance and language preferences',
+          totalMaterials: 'Total materials',
+          totalPoints: 'Total points',
+          receivedToday: 'Received today',
+          changeLast2h: 'Change (last 2h)',
+          vsPrev2h: 'vs previous 2h',
+          last2hIntake: 'Last 2h intake',
+          prev2hIntake: 'Prev 2h intake',
+          pointsToday: 'Points today',
+          avgPerDelivery: 'Avg. per delivery',
+          loading: 'Loading ...',
+          noRecords: 'No materials recorded yet.',
+          noImage: 'No image',
+          noSellerSubmissions: 'No seller submissions yet.',
+          confirmDelete: 'Are you sure you want to delete this record?'
+        },
+        ar: {
+          appTitle: 'المتجر · إعادة التدوير',
+          navOverview: 'نظرة عامة',
+          navReceive: 'استلام المواد',
+          navRecords: 'سجل المواد',
+          navRequests: 'طلبات البائعين',
+          navStats: 'الإحصائيات',
+          navProfile: 'الملف الشخصي',
+          navSettings: 'الإعدادات',
+          overviewTitle: 'نظرة عامة',
+          receiveTitle: 'استلام المواد',
+          sellerNameLabel: 'اسم البائع',
+          sellerNamePlaceholder: 'مثال: أحمد حسن',
+          phoneLabel: 'رقم الهاتف',
+          phonePlaceholder: '+20 123 456 789',
+          materialTypeLabel: 'نوع المادة',
+          aluminum: 'ألومنيوم',
+          plastic: 'بلاستيك',
+          glass: 'زجاج',
+          paper: 'ورق',
+          weightLabel: 'الوزن (جرام) — 1 جرام = 1 نقطة',
+          weightPlaceholder: '٤٥٠',
+          imageLabel: 'رفع صورة',
+          imageHint: 'سيتم تخزين الصورة الفعلية',
+          recordButton: 'تسجيل وإضافة نقاط',
+          recordsTitle: 'سجل المواد',
+          requestsTitle: 'طلبات البائعين',
+          statsTitle: 'إحصائيات مفصلة',
+          breakdownTitle: 'تحليل المواد (آخر ساعتين)',
+          profileTitle: 'الملف الشخصي للمتجر',
+          profileUsernameLabel: 'اسم المستخدم:',
+          profilePhoneLabel: 'رقم الهاتف:',
+          profileRoleLabel: 'الدور:',
+          settingsTitle: 'الإعدادات',
+          themeToggle: 'فاتح / داكن',
+          settingsHint: 'المظهر وتفضيلات اللغة',
+          totalMaterials: 'إجمالي المواد',
+          totalPoints: 'إجمالي النقاط',
+          receivedToday: 'المستلم اليوم',
+          changeLast2h: 'التغيير (آخر ساعتين)',
+          vsPrev2h: 'مقارنة بالساعتين السابقتين',
+          last2hIntake: 'آخر ساعتين',
+          prev2hIntake: 'الساعتين السابقتين',
+          pointsToday: 'نقاط اليوم',
+          avgPerDelivery: 'المتوسط لكل تسليم',
+          loading: 'جار التحميل ...',
+          noRecords: 'لم يتم تسجيل أي مواد بعد.',
+          noImage: 'لا توجد صورة',
+          noSellerSubmissions: 'لا توجد طلبات بائعين بعد.',
+          confirmDelete: 'هل أنت متأكد من حذف هذا السجل؟'
+        }
+      };
+
+      let currentLang = 'en';
+      let currentTheme = 'light';
+
+      // DOM elements
+      const body = document.body;
+      const themeToggle = document.getElementById('themeToggle');
+      const themeIcon = document.getElementById('themeIcon');
+      const langToggle = document.getElementById('langToggle');
+      const langLabel = document.getElementById('langLabel');
+      const navItems = document.querySelectorAll('.nav-item');
+      const sections = document.querySelectorAll('.section');
+      const receiveForm = document.getElementById('receiveForm');
+      const recordsDiv = document.getElementById('recordsList');
+      const overviewCards = document.getElementById('overviewCards');
+      const statsCards = document.getElementById('statsCards');
+      const breakdownText = document.getElementById('breakdownText');
+      const profileUsername = document.getElementById('profile-username');
+      const profilePhone = document.getElementById('profile-phone');
+      const profileRole = document.getElementById('profile-role');
+      const sellerRequestsGrid = document.getElementById('sellerRequestsGrid');
+
+      // ---------- HELPER: get seller materials from localStorage (filtered by userId) ----------
+      function getSellerMaterials() {
+        const data = localStorage.getItem('sellerMaterials');
+        const all = data ? JSON.parse(data) : [];
+        // MODIFIED: filter by currentUserId
+        if (!currentUserId) return [];
+        return all.filter(item => item.userId === currentUserId);
+      }
+
+      // ---------- TRANSLATION FUNCTION ----------
+      function applyTranslation(lang) {
+        const t = translations[lang];
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+          const key = el.getAttribute('data-i18n');
+          if (t[key]) {
+            if (el.tagName === 'OPTION') {
+              el.textContent = t[key];
+            } else {
+              el.textContent = t[key];
+            }
+          }
+        });
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+          const key = el.getAttribute('data-i18n-placeholder');
+          if (t[key]) {
+            el.placeholder = t[key];
+          }
+        });
+        // Refresh UI with new language
+        updateAllStats();
+        renderRecords();
+        renderSellerRequests();
+      }
+
+      function __(key) {
+        return translations[currentLang][key] || key;
+      }
+
+      // ---------- THEME TOGGLE ----------
+      themeToggle.addEventListener('click', () => {
+        body.classList.toggle('dark');
+        themeIcon.className = body.classList.contains('dark') ? 'fas fa-moon' : 'fas fa-sun';
+      });
+
+      // ---------- LANGUAGE TOGGLE ----------
+      langToggle.addEventListener('click', () => {
+        if (body.dir === 'rtl') {
+          body.dir = 'ltr';
+          langLabel.innerText = 'EN';
+          currentLang = 'en';
+        } else {
+          body.dir = 'rtl';
+          langLabel.innerText = 'AR';
+          currentLang = 'ar';
+        }
+        applyTranslation(currentLang);
+      });
+
+      // ---------- PROFILE: load from localStorage ----------
+      function loadProfileFromStorage() {
+        const userName = localStorage.getItem('userName') || '—';
+        const userPhone = localStorage.getItem('userPhone') || '—';
+        const userRole = localStorage.getItem('userRole') || '—';
+        if (profileUsername) profileUsername.textContent = userName;
+        if (profilePhone) profilePhone.textContent = userPhone;
+        if (profileRole) profileRole.textContent = userRole;
+      }
+
+      // ---------- RECEIVE FORM: add record to Dexie (userId already attached) ----------
+      receiveForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const sellerName = document.getElementById('sellerName').value.trim();
+        const phone = document.getElementById('phone').value.trim();
+        const materialType = document.getElementById('materialType').value;
+        const weight = parseFloat(document.getElementById('weight').value);
+        const imageFile = document.getElementById('materialImage').files[0];
+        if (!imageFile) return alert( __('imageHint') );
+
+        const imageBlob = await imageFile.arrayBuffer().then(buf => new Blob([buf], { type: imageFile.type }));
+
+        const timestamp = new Date();
+        const points = weight;
+
+        try {
+          await db.records.add({
+            sellerName,
+            phone,
+            materialType,
+            weight,
+            image: imageBlob,
+            timestamp,
+            points,
+            // ----- Added for userId integration -----
+            userId: currentUserId || null
+          });
+          receiveForm.reset();
+          await updateAllStats();
+          renderRecords();
+          alert( __('recordButton') + ' ' + points);
+        } catch (err) {
+          console.error(err);
+          alert('Error saving record');
+        }
+      });
+
+      // ---------- DELETE RECORD FUNCTION ----------
+      async function deleteRecord(id) {
+        if (!confirm( __('confirmDelete') )) return;
+        try {
+          await db.records.delete(id);
+          await updateAllStats();
+          renderRecords();
+        } catch (err) {
+          console.error('Delete failed', err);
+          alert('Could not delete record');
+        }
+      }
+
+      // ---------- RENDER OUTLET RECORDS (filtered by userId) ----------
+      async function renderRecords() {
+        if (!recordsDiv) return;
+        // MODIFIED: filter by userId
+        let records = [];
+        if (currentUserId) {
+          records = await db.records.where('userId').equals(currentUserId).toArray();
+        } else {
+          records = [];
+        }
+        // sort by timestamp descending
+        records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        recordsDiv.innerHTML = '';
+        if (records.length === 0) {
+          recordsDiv.innerHTML = `<p class="stat-card">${__('noRecords')}</p>`;
+          return;
+        }
+        records.forEach(rec => {
+          const card = document.createElement('div');
+          card.className = 'record-card';
+          let imgHtml = '';
+          if (rec.image) {
+            const url = URL.createObjectURL(rec.image);
+            imgHtml = `<img src="${url}" alt="material" onload="URL.revokeObjectURL('${url}')">`;
+          } else {
+            imgHtml = `<div style="height:160px; background:var(--bg-surface); border-radius:18px; display:flex; align-items:center; justify-content:center;">📷 ${__('noImage')}</div>`;
+          }
+          card.innerHTML = `
+            ${imgHtml}
+            <p><strong>${rec.sellerName}</strong> (${rec.phone})</p>
+            <p>${rec.materialType} · ${rec.weight}g · 🟢 ${rec.points} pts</p>
+            <small>${new Date(rec.timestamp).toLocaleString()}</small>
+            <button class="delete-record-btn" data-id="${rec.id}"><i class="fas fa-trash"></i></button>
+          `;
+          const deleteBtn = card.querySelector('.delete-record-btn');
+          deleteBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteRecord(rec.id);
+          });
+          recordsDiv.appendChild(card);
+        });
+      }
+
+      // ---------- COMBINED STATISTICS (sellerMaterials + Dexie records, both filtered) ----------
+      async function computeCombinedStats() {
+        const sellerMaterials = getSellerMaterials(); // already filtered
+        // MODIFIED: filter Dexie records by userId
+        let dexieRecords = [];
+        if (currentUserId) {
+          dexieRecords = await db.records.where('userId').equals(currentUserId).toArray();
+        }
+
+        const now = new Date();
+        const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
+        const fourHoursAgo = new Date(now.getTime() - 4 * 60 * 60 * 1000);
+        const startOfDay = new Date(now.setHours(0,0,0,0));
+
+        let totalWeight = 0, totalPoints = 0, todayWeight = 0, todayPoints = 0;
+        let last2hWeight = 0, prev2hWeight = 0;
+        let submissionCount = 0;
+
+        // Process sellerMaterials
+        sellerMaterials.forEach(r => {
+          const weight = r.weight || 0;
+          const points = r.points || 0;
+          totalWeight += weight;
+          totalPoints += points;
+          submissionCount++;
+
+          const dateStr = r.date || r.timestamp;
+          const d = dateStr ? new Date(dateStr) : null;
+          if (d && d >= startOfDay) {
+            todayWeight += weight;
+            todayPoints += points;
+          }
+          if (d && d >= twoHoursAgo) last2hWeight += weight;
+          else if (d && d >= fourHoursAgo && d < twoHoursAgo) prev2hWeight += weight;
+        });
+
+        // Process Dexie records
+        dexieRecords.forEach(r => {
+          const weight = r.weight || 0;
+          const points = r.points || 0;
+          totalWeight += weight;
+          totalPoints += points;
+          submissionCount++;
+
+          const d = r.timestamp ? new Date(r.timestamp) : null;
+          if (d && d >= startOfDay) {
+            todayWeight += weight;
+            todayPoints += points;
+          }
+          if (d && d >= twoHoursAgo) last2hWeight += weight;
+          else if (d && d >= fourHoursAgo && d < twoHoursAgo) prev2hWeight += weight;
+        });
+
+        let percentChange = 0;
+        if (prev2hWeight > 0) {
+          percentChange = ((last2hWeight - prev2hWeight) / prev2hWeight) * 100;
+        } else if (last2hWeight > 0) percentChange = 100;
+
+        return { totalWeight, totalPoints, todayWeight, todayPoints, last2hWeight, prev2hWeight, percentChange, submissionCount };
+      }
+
+      // ---------- UPDATE OVERVIEW & STATS SECTIONS (using combined data) ----------
+      async function updateAllStats() {
+        const stats = await computeCombinedStats();
+        // Overview cards
+        overviewCards.innerHTML = `
+          <div class="stat-card"><div class="stat-title">${__('totalMaterials')}</div><div class="stat-value">${stats.totalWeight} g</div></div>
+          <div class="stat-card"><div class="stat-title">${__('totalPoints')}</div><div class="stat-value">${stats.totalPoints}</div></div>
+          <div class="stat-card"><div class="stat-title">${__('receivedToday')}</div><div class="stat-value">${stats.todayWeight} g</div></div>
+          <div class="stat-card"><div class="stat-title">${__('changeLast2h')}</div><div class="stat-value">${stats.percentChange.toFixed(1)}%</div><div class="stat-trend">${__('vsPrev2h')}</div></div>
+        `;
+
+        // Statistics cards
+        statsCards.innerHTML = `
+          <div class="stat-card"><span class="stat-title">${__('last2hIntake')}</span><div class="stat-value">${stats.last2hWeight} g</div></div>
+          <div class="stat-card"><span class="stat-title">${__('prev2hIntake')}</span><div class="stat-value">${stats.prev2hWeight} g</div></div>
+          <div class="stat-card"><span class="stat-title">${__('pointsToday')}</span><div class="stat-value">${stats.todayPoints}</div></div>
+          <div class="stat-card"><span class="stat-title">${__('avgPerDelivery')}</span><div class="stat-value">${stats.submissionCount ? (stats.totalWeight / stats.submissionCount).toFixed(1) : 0} g</div></div>
+        `;
+
+        breakdownText.innerText = `${__('last2hIntake')}: ${stats.last2hWeight}g  |  ${__('prev2hIntake')}: ${stats.prev2hWeight}g  |  ${__('changeLast2h')}: ${stats.percentChange.toFixed(1)}%`;
+      }
+
+      // ---------- RENDER SELLER REQUESTS (from filtered sellerMaterials) ----------
+      function renderSellerRequests() {
+        if (!sellerRequestsGrid) return;
+        const materials = getSellerMaterials(); // already filtered
+        sellerRequestsGrid.innerHTML = '';
+        if (materials.length === 0) {
+          sellerRequestsGrid.innerHTML = `<div class="stat-card">${__('noSellerSubmissions')}</div>`;
+          return;
+        }
+        materials.forEach(item => {
+          const card = document.createElement('div');
+          card.className = 'record-card';
+          const sellerName = item.sellerName || item.name || item.userName || 'Unknown Seller';
+          const materialName = item.materialName || item.material || 'Unknown';
+          const weight = item.weight || 0;
+          const points = item.points || 0;
+          const dateStr = item.date || item.timestamp;
+          const formattedDate = dateStr ? new Date(dateStr).toLocaleString() : '';
+          card.innerHTML = `
+            <p><strong>${sellerName}</strong></p>
+            <p>${materialName} · ${weight}g · 🟢 ${points} pts</p>
+            <small>${formattedDate}</small>
+          `;
+          sellerRequestsGrid.appendChild(card);
+        });
+      }
+
+      // ---------- SECTION NAVIGATION ----------
+      async function showSection(sectionId) {
+        sections.forEach(sec => sec.classList.remove('active-section'));
+        document.getElementById(sectionId).classList.add('active-section');
+        navItems.forEach(item => {
+          item.classList.toggle('active', item.dataset.section === sectionId);
+        });
+
+        if (sectionId === 'overview' || sectionId === 'stats') {
+          await updateAllStats();
+        }
+        if (sectionId === 'records') {
+          await renderRecords();
+        }
+        if (sectionId === 'requests') {
+          renderSellerRequests();
+        }
+      }
+
+      navItems.forEach(item => {
+        item.addEventListener('click', () => showSection(item.dataset.section));
+      });
+
+      // ---------- INITIAL LOAD ----------
+      window.addEventListener('load', async () => {
+        body.dir = 'ltr';
+        currentLang = 'en';
+        langLabel.innerText = 'EN';
+        applyTranslation('en');
+
+        loadProfileFromStorage();
+
+        await showSection('overview');
+        await renderRecords();
+        renderSellerRequests();
+      });
+
+      window.deleteRecord = deleteRecord;
+    })();
+  </script>
+  <style>
+    body[dir="rtl"] .nav-item { text-align: right; }
+    body[dir="rtl"] .nav-item i { margin-left: 0.5rem; margin-right: 0; }
+    body[dir="rtl"] .header-controls { margin-right: auto; }
+    body[dir="rtl"] .sidebar { border-left: 1px solid var(--border-light); border-right: none; }
+  </style>
+</body>
+</html>
